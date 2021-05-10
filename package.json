@@ -4,7 +4,8 @@
   "description": "Terminal application to retrieve data about the Pokemon.",
   "main": "poke.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node poke.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/pdanielkoe/pokeapi-terminal/issues"
   },
-  "homepage": "https://github.com/pdanielkoe/pokeapi-terminal#readme"
+  "homepage": "https://github.com/pdanielkoe/pokeapi-terminal#readme",
+  "dependencies": {
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {}
 }

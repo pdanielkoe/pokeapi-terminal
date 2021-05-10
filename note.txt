@@ -1,0 +1,21 @@
+- cache store in json format
+- cache require track the cache time, store in UTC epoch timestamp (diff 60*60*24*7 > clear cache) / iso 8601 (YYYY-MM-DD HH:mm:ss then using moment.js to get the difference, 'nicer to view the cache data')
+
+https://pokeapi.co/api/v2/location/kanto/ > ID 256 
+
+hmmm kanto has empty area ? hmmm maybe use other location for sample
+
+eterna-city > ID 2
+
+>https://pokeapi.co/api/v2/location/2/
+    location.areas[].url:
+        > https://pokeapi.co/api/v2/location-area/2/
+            pokemon_encounters[].url:
+                - id 
+                - name
+                - location: eterna-city
+                - methods: location_area_encounters eterna-city 
+                - types[]
+                    type.name
+                - stats[]
+                    stat.name : base_stat
