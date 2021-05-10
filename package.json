@@ -1,0 +1,19 @@
+{
+  "name": "pokeapi-terminal",
+  "version": "0.0.1",
+  "description": "Terminal application to retrieve data about the Pokemon.",
+  "main": "poke.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/pdanielkoe/pokeapi-terminal.git"
+  },
+  "author": "Patrick Daniel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pdanielkoe/pokeapi-terminal/issues"
+  },
+  "homepage": "https://github.com/pdanielkoe/pokeapi-terminal#readme"
+}
