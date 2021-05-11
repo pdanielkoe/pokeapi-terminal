@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { array } = require('yargs');
 
 const config = require('./config/default.json');
 
