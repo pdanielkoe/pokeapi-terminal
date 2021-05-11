@@ -1,4 +1,5 @@
 {
     "location": "kanto",
-    "url": "https://pokeapi.co"
+    "url": "https://pokeapi.co",
+    "cache": "cache.json"
 }

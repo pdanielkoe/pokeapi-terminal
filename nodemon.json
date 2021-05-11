@@ -1,5 +1,8 @@
 {
     "events": {
-        "start": "node -e console.clear()"
-    }
+        
+    },
+    "ignore": [
+        "cache.json"
+    ]
 }

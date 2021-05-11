@@ -1,6 +1,10 @@
 const axios = require('axios');
 const fs = require('fs');
+const util = require('util');
 const { exit } = require('process');
+
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
 
 const config = require('./config/default.json');
 class Pokemon {
@@ -35,11 +39,11 @@ class Pokemon {
         this.locations_methods.forEach(({ location_area, version_details }) => {
             temp += `\r\n    > ${location_area.name}:`
 
-            version_details.forEach(({ encounter_details, version}) => {
+            version_details.forEach(({ encounter_details, version }) => {
                 temp += `\r\n        > ${version.name}:`
-                
+
                 let methods_set = new Set();
-                
+
                 encounter_details.forEach(({ method }) => {
                     methods_set.add(`${method.name}`);
                 });
@@ -49,7 +53,7 @@ class Pokemon {
                 });
             })
         })
-        return (temp === '')?`\r\n    -`:temp;
+        return (temp === '') ? `\r\n    -` : temp;
     }
     statsFormatter() {
         let temp = '';
@@ -66,6 +70,58 @@ class Pokemon {
             "locations_methods": this.locations_methods,
             "stats": this.stats,
         })
+    }
+}
+
+class Cache {
+    constructor(filename) {
+        this.filename = filename;
+        this.cache_ttl = 60 * 60 * 24 * 7;
+        this.data = [];
+    }
+    async load() {
+        try {
+            const raw_cache = await readFile(this.filename);
+            this.data = JSON.parse(raw_cache);
+            return;
+        } catch (error) {
+            // console.error(error);
+        }
+    }
+    async store(pokemon) {
+
+        try {
+            const cache_timestamp = new Date().getTime();
+
+            const cache_pokemon = JSON.parse(pokemon.toJSON())
+            cache_pokemon.cache_timestamp = cache_timestamp
+            this.data.push(cache_pokemon)
+            
+            // TODO: need to be enhance, shall be able to createOrUpdate instead of keep appending
+            
+            await writeFile(
+                this.filename,
+                JSON.stringify(this.data));
+            return 'cached';
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    get(id_or_name) {
+        const pokemon = this.data;
+
+        for (let i = 0; i < pokemon.length; i++) {
+
+            // check if the pokemon with given id or name exits in cache, and the cahce is not expired
+            if ((pokemon[i].id == id_or_name || pokemon[i].name == id_or_name) && !this.isExpired(pokemon[i].cache_timestamp)) {
+                return pokemon[i];
+            }
+        }
+
+        return null;
+    }
+    isExpired(cache_timestamp) {
+        return (new Date().getTime() - cache_timestamp > this.cache_ttl) ? true : false;
     }
 
 }
@@ -102,59 +158,52 @@ async function getEncounter(id_or_name, location) {
 
 (async () => {
     try {
+        // const test_input = 'bulbasaur';
+        const test_input = 1;
+        // const test_input = '1';
 
-        const pokemon_data = await getPokemon(1);
-        const encounter_data = await getEncounter(1, config.location);
+        const id_or_name = test_input
 
-        if (pokemon_data.data === 'Not Found') {
-            return exit();
+        const cache = new Cache(config.cache);
+        await cache.load();
+
+        const cache_pokemon = cache.get(id_or_name);
+
+        if (cache_pokemon == null) {
+            // not exist in cache
+            console.log('CRAWL DATA');
+            const pokemon_data = await getPokemon(id_or_name);
+            const encounter_data = await getEncounter(id_or_name, config.location);
+
+            if (pokemon_data.data === 'Not Found') {
+                console.log('Not Found');
+                return exit();
+            }
+
+            const pokemon = new Pokemon(
+                pokemon_data.id,
+                pokemon_data.name,
+                pokemon_data.types,
+                encounter_data,
+                pokemon_data.stats
+            )
+
+            cache.store(pokemon)
+            console.log(pokemon.show());
+
+        } else {
+            // load from cache
+            console.log('CACHED DATA');
+            const pokemon = new Pokemon(
+                cache_pokemon.id,
+                cache_pokemon.name,
+                cache_pokemon.types,
+                cache_pokemon.locations_methods,
+                cache_pokemon.stats
+            )
+            console.log(pokemon.show());
         }
 
-        const pokemon = new Pokemon(
-            pokemon_data.id,
-            pokemon_data.name,
-            pokemon_data.types,
-            encounter_data,
-            pokemon_data.stats
-        )
-
-        console.log(pokemon.show());
-
-
-        //test
-
-        // try {
-        //     const pokemon_req = await axios.get(`https://pokeapi.co/api/v2/location/?limit=796`);
-        //     test = pokemon_req.data.results;
-
-        //     console.log('location:')
-        //     test.forEach((location) => {
-        //         if (location.name.indexOf(config.location) !== -1) {
-
-        //             console.log(` - ${location.name}`)
-        //         }
-        //     });
-        // } catch (error) {
-        //     console.error(error);
-        // }
-
-        // try {
-        //     const pokemon_req = await axios.get(`https://pokeapi.co/api/v2/location-area/?limit=702`);
-        //     test = pokemon_req.data.results;
-
-        //     console.log('location-area:')
-        //     test.forEach((area) => {
-        //         if (area.name.indexOf(config.location) !== -1) {
-
-        //             console.log(` - ${area.name}`)
-        //         }
-        //     });
-        // } catch (error) {
-        //     console.error(error);
-        // }
-
-
-        // fs.writeFileSync('cache.json', JSON.stringify(pokemons));
     } catch (e) {
         console.log(e);
     }
