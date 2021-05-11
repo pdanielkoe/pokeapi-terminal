@@ -3,6 +3,72 @@ const fs = require('fs');
 const { exit } = require('process');
 
 const config = require('./config/default.json');
+class Pokemon {
+    constructor(id, name, types, locations_methods, stats) {
+        this.id = id;
+        this.name = name;
+        this.types = types;
+        this.locations_methods = locations_methods;
+        this.stats = stats;
+    }
+
+    show() {
+        return [
+            `id:\r\n    ${this.id}`,
+            `name:\r\n    ${this.name}`,
+            `types:    ${this.typesFormatter()}`,
+            `locations_methods:    ${this.locationsMethodsFormatter()}`,
+            `stats:    ${this.statsFormatter()}`,
+        ].join('\r\n');
+    }
+
+    typesFormatter() {
+        let temp = '';
+        this.types.forEach(({ type }) => {
+            temp += `\r\n    > ${type.name}`
+        })
+        return temp;
+    }
+    locationsMethodsFormatter() {
+        let temp = '';
+
+        this.locations_methods.forEach(({ location_area, version_details }) => {
+            temp += `\r\n    > ${location_area.name}:`
+
+            version_details.forEach(({ encounter_details, version}) => {
+                temp += `\r\n        > ${version.name}:`
+                
+                let methods_set = new Set();
+                
+                encounter_details.forEach(({ method }) => {
+                    methods_set.add(`${method.name}`);
+                });
+
+                methods_set.forEach((method) => {
+                    temp += `\r\n            > ${method}`;
+                });
+            })
+        })
+        return (temp === '')?`\r\n    -`:temp;
+    }
+    statsFormatter() {
+        let temp = '';
+        this.stats.forEach(({ base_stat, stat }) => {
+            temp += `\r\n    > ${stat.name}: ${base_stat}`
+        })
+        return temp;
+    }
+    toJSON() {
+        return JSON.stringify({
+            "id": this.id,
+            "name": this.name,
+            "types": this.types,
+            "locations_methods": this.locations_methods,
+            "stats": this.stats,
+        })
+    }
+
+}
 
 
 async function getPokemon(id_or_name) {
@@ -34,45 +100,11 @@ async function getEncounter(id_or_name, location) {
 }
 
 
-class Pokemon {
-    constructor(id, name, types, locations_methods, stats) {
-        this.id = id;
-        this.name = name;
-        this.types = types;
-        this.locations_methods = locations_methods;
-        this.stats = stats;
-    }
-
-    show() {
-        return [
-            `id: ${this.id}`,
-            `name: ${this.name}`,
-            `types: ${this.types}`,
-            `locations_methods: ${this.locations_methods}`,
-            `stats: ${this.stats}`,
-        ].join('\r\n');
-    }
-
-    typesFormatter() { }
-    locationsMethodsFormatter() { }
-    statsFormatter() { }
-    toJSON() {
-        return JSON.stringify({
-            "id": this.id,
-            "name": this.name,
-            "types": this.types,
-            "locations_methods": this.locations_methods,
-            "stats": this.stats,
-        })
-    }
-
-}
-
 (async () => {
     try {
 
-        const pokemon_data = await getPokemon(54);
-        const encounter_data = await getEncounter(54, config.location);
+        const pokemon_data = await getPokemon(1);
+        const encounter_data = await getEncounter(1, config.location);
 
         if (pokemon_data.data === 'Not Found') {
             return exit();
@@ -86,7 +118,7 @@ class Pokemon {
             pokemon_data.stats
         )
 
-        console.log(pokemon);
+        console.log(pokemon.show());
 
 
         //test
