@@ -4,122 +4,6 @@ const { exit } = require('process');
 
 const config = require('./config/default.json');
 
-// const endpoints = {
-//     "location": "api/v2/location",
-//     "pokemon": "api/v2/pokemon"
-// }
-
-// async function getLocation(location_name) {
-//     try {
-//         const location_req = await axios.get(`${config.url}/${endpoints.location}/${location_name}/`);
-//         return location_req.data;
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
-
-// async function getPokemonWithinAreas(areas) {
-//     try {
-
-//         let requests = [];
-
-//         let pokemon_encounters = [];
-
-//         areas.forEach(async (area) => {
-//             console.log(`REQUEST: ${area.url}`)
-//             requests.push(axios.get(area.url));
-//         })
-
-//         return Promise.all(requests)
-//             .then((reponses) => {
-//                 reponses.forEach((response) => {
-//                     const pokemon_within_area = response.data.pokemon_encounters;
-//                     // console.log(pokemon_within_area);
-//                     pokemon_within_area.forEach((pokemon) => {
-//                         pokemon_encounters.push(pokemon.pokemon.url)
-//                     })
-//                 });
-//                 return pokemon_encounters;
-//             });
-
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
-
-// async function getPokemonDetails(pokemon_urls) {
-//     try {
-
-//         let requests = [];
-
-//         let pokemons = [];
-
-//         pokemon_urls.forEach(async (url) => {
-//             console.log(`REQUEST: ${url}`)
-//             requests.push(axios.get(url));
-//         })
-
-//         return Promise.all(requests)
-//             .then((reponses) => {
-//                 reponses.forEach(async (response) => {
-//                     const data = response.data;
-//                     const pokemon = {
-//                         "id": data.id,
-//                         "name": data.name,
-//                         "types": data.types,
-//                         "location_method": data.location_area_encounters,
-//                         "stats": data.stats.map(stat => ({
-//                             "name": stat.stat.name,
-//                             "base_stat": stat.base_stat,
-//                         })),
-//                     }
-//                     // console.log(pokemon);
-//                     pokemons.push(pokemon)
-//                 });
-//                 return pokemons;
-//             });
-
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
-
-// async function getPokemonEncounterDetails(pokemons, areas) {
-//     try {
-
-//         let requests = [];
-
-//         const area_urls = areas.map(area => area.url);
-
-//         // console.log(area_urls);
-
-//         pokemons.forEach(async (pokemon) => {
-//             console.log(`REQUEST: ${pokemon.location_method}`)
-//             requests.push(axios.get(pokemon.location_method));
-//         })
-
-//         return Promise.all(requests)
-//             .then((reponses) => {
-//                 reponses.forEach((response, index) => {
-//                     const data = response.data;
-
-//                     pokemons[index].location_method = [];
-
-//                     data.forEach((area) => {
-//                         if (area_urls.includes(area.location_area.url)) {
-//                             pokemons[index].location_method.push(area)
-//                         }
-//                     });
-//                 });
-
-//                 return pokemons;
-//             });
-
-//     } catch (error) {
-//         console.error(error);
-//     }
-
-// }
 
 async function getPokemon(id_or_name) {
     try {
@@ -186,15 +70,6 @@ class Pokemon {
 
 (async () => {
     try {
-        // const location_data = await getLocation();
-        // const areas = location_data.areas;
-        // const pokemon_encounters = await getPokemonWithinAreas(areas);
-        // let pokemons = await getPokemonDetails(pokemon_encounters);
-        // pokemons = await getPokemonEncounterDetails(pokemons, areas);
-        // console.log(location_data);
-        // console.log(areas);
-        // console.log(`pokemon_encounters:${pokemon_encounters}`);
-        // console.log(`pokemons:${JSON.stringify(pokemons)}`);
 
         const pokemon_data = await getPokemon(54);
         const encounter_data = await getEncounter(54, config.location);
@@ -202,9 +77,6 @@ class Pokemon {
         if (pokemon_data.data === 'Not Found') {
             return exit();
         }
-
-        // const location_data = await getLocation(config.location);
-        // const areas = location_data.areas;
 
         const pokemon = new Pokemon(
             pokemon_data.id,
