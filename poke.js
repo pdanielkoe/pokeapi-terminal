@@ -76,8 +76,9 @@ class Pokemon {
 class Cache {
     constructor(filename) {
         this.filename = filename;
-        // this.cache_ttl = 60 * 60 * 24 * 7 * 1000;
-        this.cache_ttl = 10 * 1000;
+        // // TEST cache TTL
+        // this.cache_ttl = 10 * 1000;
+        this.cache_ttl = 60 * 60 * 24 * 7 * 1000;
         this.data = [];
     }
     async load() {
@@ -94,12 +95,12 @@ class Cache {
         try {
             const cache_timestamp = new Date().getTime();
 
-            const cache_pokemon = JSON.parse(pokemon.toJSON())
-            cache_pokemon.cache_timestamp = cache_timestamp
+            const cache_pokemon = JSON.parse(pokemon.toJSON());
+            cache_pokemon.cache_timestamp = cache_timestamp;
 
             this.clear(pokemon.id);
 
-            this.data.push(cache_pokemon)
+            this.data.push(cache_pokemon);
 
             await writeFile(
                 this.filename,
@@ -168,7 +169,7 @@ async function getEncounter(id_or_name, location) {
         encounter_req.data.forEach(async (encounter) => {
             if (encounter.location_area.name.indexOf(location) !== -1) {
                 // console.log(encounter.location_area.name)
-                encounter_details.push(encounter)
+                encounter_details.push(encounter);
             }
         });
 
@@ -180,12 +181,11 @@ async function getEncounter(id_or_name, location) {
 
 
 (async () => {
-    try {
-        // const test_input = 'bulbasaur';
-        const test_input = 1;
-        // const test_input = '1';
+    const args = process.argv.slice(2);
 
-        const id_or_name = test_input
+    try {
+
+        const id_or_name = args[0];
 
         const cache = new Cache(config.cache);
         await cache.load();
@@ -194,7 +194,7 @@ async function getEncounter(id_or_name, location) {
 
         if (cache_pokemon == null) {
             // not exist in cache
-            console.log('CRAWL DATA');
+            // console.log('CRAWL DATA');
             const pokemon_data = await getPokemon(id_or_name);
 
             if (pokemon_data === 'Not Found') {
@@ -212,12 +212,12 @@ async function getEncounter(id_or_name, location) {
                 pokemon_data.stats
             )
 
-            cache.store(pokemon)
+            cache.store(pokemon);
             console.log(pokemon.show());
 
         } else {
             // load from cache
-            console.log('CACHED DATA');
+            // console.log('CACHED DATA');
             const pokemon = new Pokemon(
                 cache_pokemon.id,
                 cache_pokemon.name,
