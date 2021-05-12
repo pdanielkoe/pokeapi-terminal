@@ -77,7 +77,7 @@ class Cache {
     constructor(filename) {
         this.filename = filename;
         // this.cache_ttl = 60 * 60 * 24 * 7 * 1000;
-        this.cache_ttl =  10*1000;
+        this.cache_ttl = 10 * 1000;
         this.data = [];
     }
     async load() {
@@ -98,7 +98,7 @@ class Cache {
             cache_pokemon.cache_timestamp = cache_timestamp
 
             this.clear(pokemon.id);
-            
+
             this.data.push(cache_pokemon)
 
             await writeFile(
@@ -137,17 +137,31 @@ class Cache {
 
 async function getPokemon(id_or_name) {
     try {
-        const pokemon_req = await axios.get(`${config.url}/api/v2/pokemon/${id_or_name}/`);
+        const pokemon_req = await axios.get(`${config.url}/api/v2/pokemon/${id_or_name}/`)
+            .catch(err => {
+                if (err.response.status === 404) {
+                    throw new Error(`${err.config.url} not found`);
+                }
+                throw err;
+            });
+
         return pokemon_req.data;
     } catch (error) {
-        console.error(error);
+        // console.error(error);
+        return 'Not Found';
     }
 }
 
 async function getEncounter(id_or_name, location) {
 
     try {
-        const encounter_req = await axios.get(`${config.url}/api/v2/pokemon/${id_or_name}/encounters`);
+        const encounter_req = await axios.get(`${config.url}/api/v2/pokemon/${id_or_name}/encounters`)
+            .catch(err => {
+                if (err.response.status === 404) {
+                    throw new Error(`${err.config.url} not found`);
+                }
+                throw err;
+            });
 
         let encounter_details = []
 
@@ -156,7 +170,8 @@ async function getEncounter(id_or_name, location) {
                 // console.log(encounter.location_area.name)
                 encounter_details.push(encounter)
             }
-        })
+        });
+
         return encounter_details;
     } catch (error) {
         console.error(error);
@@ -181,12 +196,13 @@ async function getEncounter(id_or_name, location) {
             // not exist in cache
             console.log('CRAWL DATA');
             const pokemon_data = await getPokemon(id_or_name);
-            const encounter_data = await getEncounter(id_or_name, config.location);
 
-            if (pokemon_data.data === 'Not Found') {
+            if (pokemon_data === 'Not Found') {
                 console.log('Not Found');
                 return exit();
             }
+
+            const encounter_data = await getEncounter(id_or_name, config.location);
 
             const pokemon = new Pokemon(
                 pokemon_data.id,
