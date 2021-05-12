@@ -76,7 +76,8 @@ class Pokemon {
 class Cache {
     constructor(filename) {
         this.filename = filename;
-        this.cache_ttl = 60 * 60 * 24 * 7;
+        // this.cache_ttl = 60 * 60 * 24 * 7 * 1000;
+        this.cache_ttl =  10*1000;
         this.data = [];
     }
     async load() {
@@ -95,10 +96,11 @@ class Cache {
 
             const cache_pokemon = JSON.parse(pokemon.toJSON())
             cache_pokemon.cache_timestamp = cache_timestamp
+
+            this.clear(pokemon.id);
+            
             this.data.push(cache_pokemon)
-            
-            // TODO: need to be enhance, shall be able to createOrUpdate instead of keep appending
-            
+
             await writeFile(
                 this.filename,
                 JSON.stringify(this.data));
@@ -106,6 +108,12 @@ class Cache {
         } catch (error) {
             console.error(error);
         }
+    }
+    clear(id) {
+        const filtered = this.data.filter((val, key) => {
+            return val.id != id;
+        })
+        this.data = filtered;
     }
     get(id_or_name) {
         const pokemon = this.data;
